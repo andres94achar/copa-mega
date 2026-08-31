@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copa Mega 2026 - Gestión de Equipos</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #0b0e14;
+      --card-bg: #161c24;
+      --card-border: #222b36;
+      --accent-red: #d50032;
+      --accent-red-hover: #ff1744;
+      --accent-green: #00e676;
+      --accent-gold: #ffd700;
+      --accent-blue: #00b0ff;
+      --accent-purple: #b388ff;
+      --text-main: #ffffff;
+      --text-muted: #8899a6;
+      --input-bg: #0b0e14;
+      --input-border: #2c3545;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      border: 1px solid var(--accent-gold);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent-gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header p {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0 12px;
+    }
+    .section-divider .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex: none;
+    }
+    .section-divider.buenafe .dot { background: var(--accent-blue); }
+    .section-divider.atuendos .dot { background: var(--accent-purple); }
+    .section-divider h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 800;
+    }
+    .section-divider.buenafe h2 { color: var(--accent-blue); }
+    .section-divider.atuendos h2 { color: var(--accent-purple); }
+    .section-divider .line {
+      flex: 1;
+      height: 1px;
+      background: var(--card-border);
+    }
+    .section-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: -6px 0 14px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .card.buenafe { border-left: 3px solid var(--accent-blue); }
+    .card.atuendos { border-left: 3px solid var(--accent-purple); }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    input, select {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .btn-add {
+      background-color: var(--accent-green);
+      color: #000;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn-add.purple { background-color: var(--accent-purple); }
+
+    .btn-export {
+      background: linear-gradient(135deg, var(--accent-gold), #ffab00);
+      color: #000;
+      width: 100%;
+      font-size: 0.95rem;
+      padding: 14px;
+      margin-top: 4px;
+    }
+    .btn-export.purple {
+      background: linear-gradient(135deg, var(--accent-purple), #7c4dff);
+      color: #fff;
+    }
+
+    .btn-clear {
+      background-color: var(--accent-red);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+
+    .badge {
+      background-color: var(--accent-red);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .badge.purple { background-color: var(--accent-purple); }
+
+    .player-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .player-card {
+      background-color: #1c2531;
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .player-card.atuendos { 
+      border-left-color: var(--accent-purple); 
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .player-number {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--accent-gold);
+      width: 45px;
+    }
+
+    .player-info { flex: 1; min-width: 200px; }
+    .player-name { font-size: 0.95rem; font-weight: 700; }
+    .player-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    .atuendo-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .atuendo-controls select {
+      padding: 6px 8px;
+      font-size: 0.8rem;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: var(--accent-red-hover);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 6px;
+    }
+
+    .tag-auto {
+      background-color: rgba(0, 176, 255, 0.15);
+      color: var(--accent-blue);
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .pdf-template {
+      position: absolute;
+      top: 0;
+      left: -10000px;
+      z-index: -1;
+    }
+
+    #pdf-loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 14, 20, 0.94);
+      z-index: 99999;
+      color: #fff;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header class="header">
+      <h1><i class="fa-solid fa-trophy"></i> Copa Mega 2026</h1>
+      <p>Gestión Oficial de Equipos y Pedidos de Uniformes</p>
+    </header>
+
+    <section class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-shield-halved"></i> Datos del Equipo</span>
+        <button class="btn btn-clear" onclick="limpiarTodoData()"><i class="fa-solid fa-trash-can"></i> Borrar Todo</button>
+      </div>
+      <div class="grid">
+        <div class="form-group">
+          <label>Nombre del Equipo</label>
+          <input type="text" id="eq-nombre" placeholder="Ej: Galácticos FC" oninput="guardarEstado()" />
+        </div>
+        <div class="form-group">
+          <label>Nombre del Capitán</label>
+          <input type="text" id="eq-capitan" placeholder="Ej: Carlos Mendoza" oninput="guardarEstado()" />
+        </div>
+        <div class="form-group">
+          <label>Nombre del Delegado</label>
+          <input type="text" id="eq-delegado" placeholder="Ej: Roberto Gómez" oninput="guardarEstado()" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono del Delegado</label>
+          <input type="tel" id="eq-telefono" placeholder="Ej: +595 981 123456" oninput="guardarEstado()" />
+        </div>
+      </div>
+    </section>
+
+    <!-- LISTA DE BUENA FE -->
+    <div class="section-divider buenafe">
+      <div class="dot"></div>
+      <h2>Lista de Buena Fe</h2>
+      <div class="line"></div>
+    </div>
+    <p class="section-note">Plantilla oficial de jugadores. Al agregar un jugador aquí, se vincula automáticamente al Pedido de Atuendos.</p>
+
+    <section class="card buenafe">
+      <div class="card-title">
+        <span><i class="fa-solid fa-user-plus"></i> Ficha del Jugador</span>
+        <span class="badge" id="player-count">0 / 10</span>
+      </div>
+
+      <div class="grid">
+        <div class="form-group full-width">
+          <label>Nombre y Apellido</label>
+          <input type="text" id="j-nombre-completo" placeholder="Nombre completo del jugador" />
+        </div>
+        <div class="form-group">
+          <label>Documento (DNI/CI)</label>
+          <input type="text" id="j-doc" placeholder="N° de Documento" />
+        </div>
+        <div class="form-group">
+          <label>Sector / Área</label>
+          <input type="text" id="j-sector" placeholder="Ej: Logística" />
+        </div>
+        <div class="form-group">
+          <label>Posición</label>
+          <select id="j-posicion">
+            <option value="Jugador">Jugador</option>
+            <option value="Portero">Portero</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>NOMBRE DORSAL</label>
+          <input type="text" id="j-estampa-nombre" placeholder="Ej: J. PÉREZ" />
+        </div>
+        <div class="form-group">
+          <label>Número Dorsal</label>
+          <input type="number" id="j-estampa-numero" placeholder="Ej: 10" min="1" max="99" />
+        </div>
+      </div>
+
+      <button class="btn btn-add" onclick="agregarJugador()">
+        <i class="fa-solid fa-plus"></i> Agregar a la Lista de Buena Fe
+      </button>
+    </section>
+
+    <section class="card buenafe">
+      <div class="card-title">
+        <span><i class="fa-solid fa-users"></i> Plantilla Oficial</span>
+      </div>
+      <div class="player-list" id="players-container"></div>
+      <button class="btn btn-export" onclick="exportarBuenaFePDF()">
+        <i class="fa-solid fa-file-pdf"></i> Exportar Lista de Buena Fe (PDF A4)
+      </button>
+    </section>
+
+    <!-- PEDIDO DE ATUENDOS -->
+    <div class="section-divider atuendos">
+      <div class="dot"></div>
+      <h2>Pedido de Atuendos</h2>
+      <div class="line"></div>
+    </div>
+    <p class="section-note">Los jugadores agregados arriba aparecen aquí automáticamente. También puedes agregar personas extra que solo deseen la remera.</p>
+
+    <section class="card atuendos">
+      <div class="card-title">
+        <span><i class="fa-solid fa-shirt"></i> Pedido Extra / Adicional</span>
+      </div>
+
+      <div class="grid">
+        <div class="form-group full-width">
+          <label>Nombre y Apellido</label>
+          <input type="text" id="p-nombre" placeholder="Nombre completo de quien recibe el atuendo extra" />
+        </div>
+        <div class="form-group">
+          <label>Modalidad de Pedido</label>
+          <select id="p-modalidad" onchange="toggleShortSize(this.value)">
+            <option value="Solo Remera" selected>Solo Remera (no es del equipo)</option>
+            <option value="Equipo Completo">Equipo Completo (Remera + Shorts)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Género / Corte</label>
+          <select id="p-genero">
+            <option value="Masculino" selected>Masculino</option>
+            <option value="Femenino">Femenino</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Talla Remera</label>
+          <select id="p-talla-remera">
+            <option value="S">S</option>
+            <option value="M" selected>M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+          </select>
+        </div>
+        <div class="form-group" id="group-talla-short" style="display:none;">
+          <label>Talla Shorts</label>
+          <select id="p-talla-short">
+            <option value="S">S</option>
+            <option value="M" selected>M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>NOMBRE DORSAL</label>
+          <input type="text" id="p-estampa-nombre" placeholder="Ej: J. PÉREZ" />
+        </div>
+        <div class="form-group">
+          <label>Número (opcional)</label>
+          <input type="number" id="p-estampa-numero" placeholder="Ej: 10" min="1" max="99" />
+        </div>
+      </div>
+
+      <button class="btn btn-add purple" onclick="agregarPedidoExtra()">
+        <i class="fa-solid fa-plus"></i> Agregar Pedido Extra
+      </button>
+    </section>
+
+    <section class="card atuendos">
+      <div class="card-title">
+        <span><i class="fa-solid fa-list-check"></i> Planilla Total de Atuendos</span>
+        <span class="badge purple" id="pedido-count">0 pedidos</span>
+      </div>
+      <div class="player-list" id="pedidos-container"></div>
+      <button class="btn btn-export purple" onclick="exportarAtuendosPDF()">
+        <i class="fa-solid fa-file-pdf"></i> Exportar Pedido de Atuendos (PDF A4)
+      </button>
+    </section>
+  </div>
+
+  <!-- PLANTILLA PDF: LISTA DE BUENA FE -->
+  <div id="pdf-template-buenafe" class="pdf-template">
+    <div style="width: 190mm; min-height: 270mm; padding: 5mm; font-family: Arial, sans-serif; color: #111; box-sizing: border-box; background: #fff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #d50032; padding-bottom: 8px; margin-bottom: 12px;">
+        <div>
+          <h1 style="margin: 0; font-size: 20pt; color: #0b2545; text-transform: uppercase; font-weight: 900;">COPA MEGA 2026</h1>
+          <p style="margin: 2px 0 0 0; font-size: 9pt; color: #d50032; font-weight: bold; text-transform: uppercase;">Lista Oficial de Buena Fe</p>
+        </div>
+        <div style="background-color: #00b0ff; color: #fff; padding: 6px 12px; font-size: 8pt; font-weight: bold; border-radius: 4px;">DOCUMENTO OFICIAL</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background-color: #f4f6f8; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 8.5pt;">
+        <div><b>Equipo:</b> <span id="pdf1-eq-nombre">-</span></div>
+        <div><b>Capitán:</b> <span id="pdf1-eq-capitan">-</span></div>
+        <div><b>Delegado:</b> <span id="pdf1-eq-delegado">-</span></div>
+        <div><b>Contacto:</b> <span id="pdf1-eq-telefono">-</span></div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+          <tr style="background-color: #0b2545; color: #ffffff; font-size: 7.5pt; text-transform: uppercase;">
+            <th style="padding: 6px 4px; text-align: center; width: 5%;">#</th>
+            <th style="padding: 6px 4px; text-align: left; width: 27%;">Jugador</th>
+            <th style="padding: 6px 4px; text-align: left; width: 16%;">Doc / CI</th>
+            <th style="padding: 6px 4px; text-align: left; width: 16%;">Sector</th>
+            <th style="padding: 6px 4px; text-align: center; width: 12%;">Posición</th>
+            <th style="padding: 6px 4px; text-align: left; width: 24%;">Nombre / N° en Remera</th>
+          </tr>
+        </thead>
+        <tbody id="pdf1-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PLANTILLA PDF: PEDIDO DE ATUENDOS -->
+  <div id="pdf-template-atuendos" class="pdf-template">
+    <div style="width: 190mm; min-height: 270mm; padding: 5mm; font-family: Arial, sans-serif; color: #111; box-sizing: border-box; background: #fff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #b388ff; padding-bottom: 8px; margin-bottom: 12px;">
+        <div>
+          <h1 style="margin: 0; font-size: 20pt; color: #0b2545; text-transform: uppercase; font-weight: 900;">COPA MEGA 2026</h1>
+          <p style="margin: 2px 0 0 0; font-size: 9pt; color: #7c4dff; font-weight: bold; text-transform: uppercase;">Pedido de Atuendos / Uniformes</p>
+        </div>
+        <div style="background-color: #b388ff; color: #1a0033; padding: 6px 12px; font-size: 8pt; font-weight: bold; border-radius: 4px;">PLANILLA DE PEDIDOS</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background-color: #f4f6f8; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 8.5pt;">
+        <div><b>Equipo:</b> <span id="pdf2-eq-nombre">-</span></div>
+        <div><b>Delegado:</b> <span id="pdf2-eq-delegado">-</span></div>
+        <div style="grid-column: 1 / -1;"><b>Contacto:</b> <span id="pdf2-eq-telefono">-</span></div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+          <tr style="background-color: #4a2d8f; color: #ffffff; font-size: 7.5pt; text-transform: uppercase;">
+            <th style="padding: 6px 4px; text-align: center; width: 4%;">#</th>
+            <th style="padding: 6px 4px; text-align: left; width: 25%;">Nombre y Apellido</th>
+            <th style="padding: 6px 4px; text-align: left; width: 17%;">Modalidad</th>
+            <th style="padding: 6px 4px; text-align: center; width: 12%;">Género</th>
+            <th style="padding: 6px 4px; text-align: center; width: 10%;">Remera</th>
+            <th style="padding: 6px 4px; text-align: center; width: 10%;">Shorts</th>
+            <th style="padding: 6px 4px; text-align: left; width: 22%;">Estampa</th>
+          </tr>
+        </thead>
+        <tbody id="pdf2-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="pdf-loading-overlay">
+    <i class="fa-solid fa-file-pdf" style="margin-right:10px;"></i> Generando PDF...
+  </div>
+
+  <script>
+    let equipoState = {
+      nombre: '',
+      capitan: '',
+      delegado: '',
+      telefono: '',
+      jugadores: [],
+      pedidosExtras: []
+    };
+
+    const LOCAL_STORAGE_KEY = 'copa_mega_2026_data_v3';
+
+    function guardarEstado() {
+      equipoState.nombre = document.getElementById('eq-nombre').value.trim();
+      equipoState.capitan = document.getElementById('eq-capitan').value.trim();
+      equipoState.delegado = document.getElementById('eq-delegado').value.trim();
+      equipoState.telefono = document.getElementById('eq-telefono').value.trim();
+
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(equipoState));
+    }
+
+    function cargarEstado() {
+      const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (data) {
+        try {
+          equipoState = JSON.parse(data);
+          document.getElementById('eq-nombre').value = equipoState.nombre || '';
+          document.getElementById('eq-capitan').value = equipoState.capitan || '';
+          document.getElementById('eq-delegado').value = equipoState.delegado || '';
+          document.getElementById('eq-telefono').value = equipoState.telefono || '';
+        } catch (e) {
+          console.error("Error al cargar datos desde localStorage", e);
+        }
+      }
+    }
+
+    function limpiarTodoData() {
+      if (confirm("¿Estás seguro de que deseas borrar todos los datos guardados?")) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        equipoState = { nombre: '', capitan: '', delegado: '', telefono: '', jugadores: [], pedidosExtras: [] };
+        document.getElementById('eq-nombre').value = '';
+        document.getElementById('eq-capitan').value = '';
+        document.getElementById('eq-delegado').value = '';
+        document.getElementById('eq-telefono').value = '';
+        actualizarListaBuenaFe();
+        actualizarPedidos();
+      }
+    }
+
+    function toggleShortSize(modalidad) {
+      const groupShort = document.getElementById('group-talla-short');
+      groupShort.style.display = (modalidad === 'Solo Remera') ? 'none' : 'flex';
+    }
+
+    function agregarJugador() {
+      if (equipoState.jugadores.length >= 10) {
+        alert('Límite alcanzado: la lista de buena fe permite máximo 10 jugadores.');
+        return;
+      }
+
+      const nombreCompleto = document.getElementById('j-nombre-completo').value.trim();
+      const doc = document.getElementById('j-doc').value.trim();
+      const sector = document.getElementById('j-sector').value.trim();
+      const posicion = document.getElementById('j-posicion').value;
+      const estampaNombre = document.getElementById('j-estampa-nombre').value.trim() || nombreCompleto.toUpperCase();
+      const estampaNumero = document.getElementById('j-estampa-numero').value.trim();
+
+      if (!nombreCompleto || !doc || !estampaNumero) {
+        alert('Completa los campos obligatorios: Nombre y Apellido, Documento y Número Dorsal.');
+        return;
+      }
+
+      equipoState.jugadores.push({
+        id: Date.now(),
+        nombreCompleto,
+        doc,
+        sector,
+        posicion,
+        estampaNombre,
+        estampaNumero,
+        genero: 'Masculino',
+        tallaRemera: 'M',
+        tallaShort: 'M',
+        modalidad: 'Equipo Completo'
+      });
+
+      guardarEstado();
+      actualizarListaBuenaFe();
+      actualizarPedidos();
+
+      document.getElementById('j-nombre-completo').value = '';
+      document.getElementById('j-doc').value = '';
+      document.getElementById('j-sector').value = '';
+      document.getElementById('j-estampa-nombre').value = '';
+      document.getElementById('j-estampa-numero').value = '';
+    }
+
+    function eliminarJugador(id) {
+      equipoState.jugadores = equipoState.jugadores.filter(j => j.id !== id);
+      guardarEstado();
+      actualizarListaBuenaFe();
+      actualizarPedidos();
+    }
+
+    function actualizarTallaJugador(id, tipo, valor) {
+      const jugador = equipoState.jugadores.find(j => j.id === id);
+      if (jugador) {
+        if (tipo === 'remera') jugador.tallaRemera = valor;
+        if (tipo === 'short') jugador.tallaShort = valor;
+        if (tipo === 'modalidad') jugador.modalidad = valor;
+        if (tipo === 'genero') jugador.genero = valor;
+        guardarEstado();
+        actualizarPedidos();
+      }
+    }
+
+    function actualizarListaBuenaFe() {
+      document.getElementById('player-count').textContent = `${equipoState.jugadores.length} / 10`;
+      const container = document.getElementById('players-container');
+      container.innerHTML = '';
+
+      if (equipoState.jugadores.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 10px;">No hay jugadores registrados.</p>`;
+        return;
+      }
+
+      equipoState.jugadores.forEach((j) => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.innerHTML = `
+          <div class="player-number">#${j.estampaNumero}</div>
+          <div class="player-info">
+            <div class="player-name">${j.nombreCompleto} (${j.posicion})</div>
+            <div class="player-sub">DNI/CI: ${j.doc} | Sector: ${j.sector || 'N/A'}</div>
+            <div class="player-sub" style="color: var(--accent-blue);">Dorsal: "${j.estampaNombre}"</div>
+          </div>
+          <button class="btn-delete" onclick="eliminarJugador(${j.id})"><i class="fa-solid fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function agregarPedidoExtra() {
+      const nombreCompleto = document.getElementById('p-nombre').value.trim();
+      const modalidad = document.getElementById('p-modalidad').value;
+      const genero = document.getElementById('p-genero').value;
+      const tallaRemera = document.getElementById('p-talla-remera').value;
+      const tallaShort = modalidad === 'Equipo Completo' ? document.getElementById('p-talla-short').value : '-';
+      const estampaNombre = document.getElementById('p-estampa-nombre').value.trim();
+      const estampaNumero = document.getElementById('p-estampa-numero').value.trim();
+
+      if (!nombreCompleto) {
+        alert('Por favor, completa el nombre y apellido.');
+        return;
+      }
+
+      equipoState.pedidosExtras.push({ id: Date.now(), nombreCompleto, modalidad, genero, tallaRemera, tallaShort, estampaNombre, estampaNumero });
+      guardarEstado();
+      actualizarPedidos();
+
+      document.getElementById('p-nombre').value = '';
+      document.getElementById('p-estampa-nombre').value = '';
+      document.getElementById('p-estampa-numero').value = '';
+    }
+
+    function eliminarPedidoExtra(id) {
+      equipoState.pedidosExtras = equipoState.pedidosExtras.filter(p => p.id !== id);
+      guardarEstado();
+      actualizarPedidos();
+    }
+
+    function actualizarPedidos() {
+      const totalPedidos = equipoState.jugadores.length + equipoState.pedidosExtras.length;
+      document.getElementById('pedido-count').textContent = `${totalPedidos} pedido${totalPedidos === 1 ? '' : 's'}`;
+      const container = document.getElementById('pedidos-container');
+      container.innerHTML = '';
+
+      if (totalPedidos === 0) {
+        container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 10px;">No hay pedidos registrados.</p>`;
+        return;
+      }
+
+      const tallas = ['S', 'M', 'L', 'XL', 'XXL'];
+
+      // 1. Jugadores Sincronizados desde Buena Fe
+      equipoState.jugadores.forEach((j) => {
+        const div = document.createElement('div');
+        div.className = 'player-card atuendos';
+        const estampa = `"${j.estampaNombre}" (#${j.estampaNumero})`;
+        
+        let optionsRemera = tallas.map(t => `<option value="${t}" ${j.tallaRemera === t ? 'selected' : ''}>${t}</option>`).join('');
+        let optionsShort = tallas.map(t => `<option value="${t}" ${j.tallaShort === t ? 'selected' : ''}>${t}</option>`).join('');
+
+        div.innerHTML = `
+          <div class="player-number" style="color: var(--accent-purple);">#${j.estampaNumero}</div>
+          <div class="player-info">
+            <div class="player-name">${j.nombreCompleto} <span class="tag-auto">Jugador</span></div>
+            <div class="player-sub" style="color: var(--accent-purple);">Dorsal: ${estampa}</div>
+          </div>
+          <div class="atuendo-controls">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:0.65rem;">Género</label>
+              <select onchange="actualizarTallaJugador(${j.id}, 'genero', this.value)">
+                <option value="Masculino" ${j.genero === 'Masculino' ? 'selected' : ''}>Masculino</option>
+                <option value="Femenino" ${j.genero === 'Femenino' ? 'selected' : ''}>Femenino</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:0.65rem;">Remera</label>
+              <select onchange="actualizarTallaJugador(${j.id}, 'remera', this.value)">
+                ${optionsRemera}
+              </select>
+            </div>
+            <div class="form-group" style="margin:0; ${j.modalidad === 'Solo Remera' ? 'display:none;' : ''}">
+              <label style="font-size:0.65rem;">Short</label>
+              <select onchange="actualizarTallaJugador(${j.id}, 'short', this.value)">
+                ${optionsShort}
+              </select>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      // 2. Pedidos Extras
+      equipoState.pedidosExtras.forEach((p) => {
+        const div = document.createElement('div');
+        div.className = 'player-card atuendos';
+        const estampa = p.estampaNombre ? `"${p.estampaNombre}"${p.estampaNumero ? ' (#' + p.estampaNumero + ')' : ''}` : 'Sin estampa';
+        const txtShort = p.modalidad === 'Equipo Completo' ? ' / Short: <b>' + p.tallaShort + '</b>' : '';
+        const generoTxt = p.genero || 'Masculino';
+        
+        div.innerHTML = `
+          <div class="player-number" style="color: var(--accent-purple);"><i class="fa-solid fa-shirt"></i></div>
+          <div class="player-info">
+            <div class="player-name">${p.nombreCompleto}</div>
+            <div class="player-sub">${p.modalidad} (${generoTxt}) — Remera: <b>${p.tallaRemera}</b>${txtShort}</div>
+            <div class="player-sub" style="color: var(--accent-purple);">Estampa: ${estampa}</div>
+          </div>
+          <button class="btn-delete" onclick="eliminarPedidoExtra(${p.id})"><i class="fa-solid fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function obtenerNombreArchivoFormateado(prefijo) {
+      const nombreEquipo = equipoState.nombre ? equipoState.nombre.replace(/[^a-zA-Z0-9_-]/g, '_') : 'SinNombre';
+      return `${prefijo}_${nombreEquipo}`;
+    }
+
+    function exportarPDF(wrapperId, prefijo) {
+      const wrapper = document.getElementById(wrapperId);
+      const element = wrapper.firstElementChild;
+      const overlay = document.getElementById('pdf-loading-overlay');
+      const nombreArchivo = obtenerNombreArchivoFormateado(prefijo);
+
+      const opt = {
+        margin: 0,
+        filename: `${nombreArchivo}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      window.scrollTo(0, 0);
+      overlay.style.display = 'flex';
+      wrapper.style.left = '0';
+      wrapper.style.zIndex = '99998';
+
+      setTimeout(() => {
+        html2pdf().set(opt).from(element).save()
+          .finally(() => {
+            wrapper.style.left = '-10000px';
+            wrapper.style.zIndex = '-1';
+            overlay.style.display = 'none';
+          });
+      }, 200);
+    }
+
+    function exportarBuenaFePDF() {
+      if (equipoState.jugadores.length === 0) return alert('Agrega al menos 1 jugador antes de exportar.');
+      document.getElementById('pdf1-eq-nombre').textContent = document.getElementById('eq-nombre').value || 'N/A';
+      document.getElementById('pdf1-eq-capitan').textContent = document.getElementById('eq-capitan').value || 'N/A';
+      document.getElementById('pdf1-eq-delegado').textContent = document.getElementById('eq-delegado').value || 'N/A';
+      document.getElementById('pdf1-eq-telefono').textContent = document.getElementById('eq-telefono').value || 'N/A';
+
+      const tbody = document.getElementById('pdf1-tbody');
+      tbody.innerHTML = '';
+      equipoState.jugadores.forEach((j, i) => {
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid #e1e8ed; font-size: 8pt;">
+            <td style="padding: 5px 4px; text-align: center;"><b>${i + 1}</b></td>
+            <td style="padding: 5px 4px;"><b>${j.nombreCompleto}</b></td>
+            <td style="padding: 5px 4px;">${j.doc}</td>
+            <td style="padding: 5px 4px;">${j.sector || '-'}</td>
+            <td style="padding: 5px 4px; text-align: center;">${j.posicion}</td>
+            <td style="padding: 5px 4px;">"${j.estampaNombre}" (#${j.estampaNumero})</td>
+          </tr>`;
+      });
+      exportarPDF('pdf-template-buenafe', 'Lista_Buena_Fe');
+    }
+
+    function exportarAtuendosPDF() {
+      const total = equipoState.jugadores.length + equipoState.pedidosExtras.length;
+      if (total === 0) return alert('Agrega al menos 1 pedido antes de exportar.');
+      
+      document.getElementById('pdf2-eq-nombre').textContent = document.getElementById('eq-nombre').value || 'N/A';
+      document.getElementById('pdf2-eq-delegado').textContent = document.getElementById('eq-delegado').value || 'N/A';
+      document.getElementById('pdf2-eq-telefono').textContent = document.getElementById('eq-telefono').value || 'N/A';
+
+      const tbody = document.getElementById('pdf2-tbody');
+      tbody.innerHTML = '';
+
+      let idx = 1;
+
+      // Imprimir Jugadores
+      equipoState.jugadores.forEach((j) => {
+        const estampa = `"${j.estampaNombre}" (#${j.estampaNumero})`;
+        const shortVal = j.modalidad === 'Equipo Completo' ? j.tallaShort : '-';
+        const generoVal = j.genero || 'Masculino';
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid #e1e8ed; font-size: 8pt;">
+            <td style="padding: 5px 4px; text-align: center;"><b>${idx++}</b></td>
+            <td style="padding: 5px 4px;"><b>${j.nombreCompleto}</b></td>
+            <td style="padding: 5px 4px;">${j.modalidad}</td>
+            <td style="padding: 5px 4px; text-align: center;">${generoVal}</td>
+            <td style="padding: 5px 4px; text-align: center;"><b>${j.tallaRemera}</b></td>
+            <td style="padding: 5px 4px; text-align: center;"><b>${shortVal}</b></td>
+            <td style="padding: 5px 4px;">${estampa}</td>
+          </tr>`;
+      });
+
+      // Imprimir Pedidos Extras
+      equipoState.pedidosExtras.forEach((p) => {
+        const estampa = p.estampaNombre ? `"${p.estampaNombre}"${p.estampaNumero ? ' (#' + p.estampaNumero + ')' : ''}` : '-';
+        const shortVal = p.modalidad === 'Equipo Completo' ? p.tallaShort : '-';
+        const generoVal = p.genero || 'Masculino';
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid #e1e8ed; font-size: 8pt;">
+            <td style="padding: 5px 4px; text-align: center;"><b>${idx++}</b></td>
+            <td style="padding: 5px 4px;"><b>${p.nombreCompleto}</b></td>
+            <td style="padding: 5px 4px;">${p.modalidad}</td>
+            <td style="padding: 5px 4px; text-align: center;">${generoVal}</td>
+            <td style="padding: 5px 4px; text-align: center;"><b>${p.tallaRemera}</b></td>
+            <td style="padding: 5px 4px; text-align: center;"><b>${shortVal}</b></td>
+            <td style="padding: 5px 4px;">${estampa}</td>
+          </tr>`;
+      });
+
+      exportarPDF('pdf-template-atuendos', 'Pedido_Atuendos');
+    }
+
+    cargarEstado();
+    actualizarListaBuenaFe();
+    actualizarPedidos();
+  </script>
+</body>
+</html>
